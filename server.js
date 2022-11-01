@@ -1,10 +1,19 @@
 const express = require('express');
+const dotenv = require('dotenv');
+dotenv.config();
 
 const app = express();
 const pg = require("./database");
+
+
 app.get('/', function (req, res) {
-  res.send('Hello World')
-  pg.query("select * from routes").then(res => console.log(res.rows));
+  res.send("running");
 })
 
-app.listen(3000);
+app.get('/test', function (req, res) {
+  pg.query("select now()").then(data => {
+    res.send(data.rows);
+  });
+})
+
+app.listen(process.env.PORT);
