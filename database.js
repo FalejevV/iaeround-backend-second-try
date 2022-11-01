@@ -1,15 +1,22 @@
-const { Pool } = require('pg');
+const pg = require('pg');
 const dotenv = require('dotenv');
 dotenv.config();
 
 
-const pool = new Pool({
-  user: 'postgres',
-  host: process.env.DBURL,
-  database: 'postgres',
-  password: process.env.DBPASS,
-  port: 5432,
-  ssl: true
-})
+const config = {
+    user: 'postgres',
+    host: process.env.DBURL,
+    database: 'postgres',
+    password: process.env.DBPASS,
+    port: 5432,
+}
 
-module.exports = pool;
+
+const client = new pg.Client(config);
+
+client.connect(err => {
+    console.log(err);
+});
+
+
+module.exports = client;

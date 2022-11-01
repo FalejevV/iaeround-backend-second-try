@@ -17,4 +17,7 @@ app.get('/test', function (req, res) {
 })
 
 
-module.exports = app;
+
+app.listen(process.env.PORT, () => {
+  console.log('listen');
+})
