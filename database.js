@@ -9,6 +9,7 @@ const pool = new Pool({
   database: 'postgres',
   password: process.env.DBPASS,
   port: 5432,
+  ssl: true
 })
 
 module.exports = pool;
