@@ -9,6 +9,9 @@ const config = {
     database: 'postgres',
     password: process.env.DBPASS,
     port: 5432,
+    ssl: {
+        rejectUnauthorized: false
+      }
 }
 
 
