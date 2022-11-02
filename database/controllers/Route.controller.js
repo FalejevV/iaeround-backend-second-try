@@ -6,14 +6,16 @@ class RouteController {
     async createRoute(req, res) {
         const body = req.body;
         const injectionCheckResult = bodyInjectionCheck(body)
+        res.send(body);
+        /*
         if(injectionCheckResult === "OK"){
-            // do query
+            res.send("OK");
         }else{
             console.log(injectionCheckResult);
             res.status(401);
             res.send(injectionCheckResult + " <-- wrong input");
         }
-
+        */
     }
     async getAllRoutes(req, res) {
         const routeQuery = await db.query(`SELECT * FROM routes;`);
