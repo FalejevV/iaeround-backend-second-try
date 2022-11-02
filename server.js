@@ -13,10 +13,13 @@ app.use("/api", routeRoutes);
 app.use("/api", userRoutes);
 app.use("/api", tagRoutes);
 
+
 app.get('/', function (req, res) {
   res.send("running");
 })
 
+
+app.use('/storage', express.static('storage'))
 
 app.listen(process.env.PORT, () => {
   console.log('listen');
