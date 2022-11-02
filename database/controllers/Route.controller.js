@@ -22,9 +22,13 @@ class RouteController {
 
     async getAllRoutesLimit(req, res) {
         const limit = req.params.limit;
-        console.log(`SELECT * FROM routes LIMIT ${limit};`);
         const routeQuery = await db.query(`SELECT * FROM routes LIMIT ${limit};`);
         res.send(routeQuery.rows);
+    }
+
+    async getAllRoutesCount(req, res) {
+        const routeCountQuery = await db.query(`SELECT count(*) FROM routes;`);
+        res.send(routeCountQuery.rows);
     }
 
 
