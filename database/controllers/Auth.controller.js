@@ -23,9 +23,9 @@ class AuthController{
                 }
 
                 res.cookie('token',body, { httpOnly: true });
-                res.status(200).send("OK");
+                res.send("OK");
             }else{
-                res.status(403).send("Invalid login information");
+                res.send("Invalid login information");
             }
         });
     }
@@ -43,7 +43,7 @@ class AuthController{
                     res.send(queryRegisterResponse);
                 })
             }else{
-                res.status(403).send("Login or email is already used");
+                res.send("Login or email is already used");
             }
         });
     }
