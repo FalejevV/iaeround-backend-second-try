@@ -18,7 +18,9 @@ const config = {
 const client = new pg.Pool(config);
 
 client.connect(err => {
-    console.log(err);
+    if(err) {
+        console.log(err);
+    }
 });
 
 
