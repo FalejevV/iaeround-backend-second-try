@@ -28,7 +28,7 @@ class AuthController{
                     httpOnly: true,
                     sameSite: 'none'
                   });
-                res.send({
+                res.send({ 
                     status:"OK",
                     login: login,
                 });
