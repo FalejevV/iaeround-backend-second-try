@@ -11,8 +11,21 @@ const tagRoutes = require("./database/routes/Tag.routes");
 const authRoutes = require("./database/routes/Auth.routes");
 
 app.use(express.json());
-app.use(cors());
 app.use(cookieParser());
+
+app.use(cors({ 
+  origin: [ 
+    'http://localhost:3000', 
+    'https://iaeround.xyz' 
+  ], 
+  methods: ['GET', 'PUT', 'POST'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], 
+  credentials: true, 
+  exposedHeaders: ['*', 'Authorization' ],
+  sameSite: 'none'
+}));
+
+
 app.use("/api", routeRoutes);
 app.use("/api", userRoutes);
 app.use("/api", tagRoutes);
@@ -27,6 +40,6 @@ app.get('/', function (req, res) {
 
 app.use('/storage', express.static('storage'))
 
-app.listen((process.env.PORT || 3000), () => {
-  console.log('listening to ' + (process.env.PORT || 3000));
+app.listen((process.env.PORT || 5000), () => {
+  console.log('listening to ' + (process.env.PORT || 5000));
 })

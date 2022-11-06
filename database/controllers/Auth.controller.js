@@ -22,10 +22,22 @@ class AuthController{
                     token
                 }
 
-                res.cookie('token',body, { httpOnly: true });
-                res.send("OK");
+                res.cookie('access_token', body, {
+                    expires: new Date(Date.now() + (60*60)),
+                    secure: true,
+                    httpOnly: true,
+                    sameSite: 'none'
+                  });
+                res.send({
+                    status:"OK",
+                    login: login,
+                });
+                res.end();
             }else{
-                res.send("Invalid login information");
+                res.send({
+                    status:"Wrong login or password",
+                });
+                res.end();
             }
         });
     }
