@@ -22,13 +22,12 @@ class AuthController{
                     token
                 }
 
-                res.cookie('access_token', body, {
-                    expires: new Date(Date.now() + (60*60)),
+                res.cookie('locale', JSON.stringify(body), {
+                    maxAge: new Date() * 60 + 300,
+                    domain: 'http://localhost:3000',
                     secure: true,
-                    httpOnly: true,
-                    sameSite: 'none',
-                    domain: 'https://iaeround.xyz',
-                  });
+                    sameSite:'none',
+                });
                 res.send({ 
                     status:"OK",
                     login: login,
