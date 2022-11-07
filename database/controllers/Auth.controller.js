@@ -27,7 +27,7 @@ class AuthController{
                     secure: true,
                     httpOnly: true,
                     sameSite: 'none',
-                    domain: 'http://localhost',
+                    domain: 'https://iaeround.xyz',
                   });
                 res.send({ 
                     status:"OK",
