@@ -12,7 +12,17 @@ class UserController{
 
     }
     async getOneUser(req, res){
-
+        db.query(`select *  from users where (id = '${req.params.id}');`)
+            .then(queryResponse => {
+                if(queryResponse.rows[0]){
+                    res.end(JSON.stringify({
+                        login: queryResponse.rows[0].login,
+                        email: queryResponse.rows[0].email,
+                        avatar: queryResponse.rows[0].avatar,
+                        about : queryResponse.rows[0].about
+                    }));
+                }
+            });
     }
     async updateUser(req, res){
 
@@ -33,6 +43,7 @@ class UserController{
             .then(queryResponse => {
                 if(queryResponse.rows[0]){
                     res.end(JSON.stringify({
+                        id: queryResponse.rows[0].id,
                         login: queryResponse.rows[0].login,
                         email: queryResponse.rows[0].email,
                         avatar: queryResponse.rows[0].avatar,
