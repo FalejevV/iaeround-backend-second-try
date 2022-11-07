@@ -1,4 +1,7 @@
 const db = require('../../database');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
 
 class UserController{
     async createUser(req, res){
@@ -15,6 +18,31 @@ class UserController{
 
     }
     async deleteUser(req, res){
+
+    }
+    async getUserByToken(req,res){
+        if(!req.cookies.token || req.cookies.token === ""){
+            res.send("");
+            res.end("");
+            return;
+        }
+
+        const verified = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+        if(verified){
+            db.query(`select *  from users where (login = '${verified.data}');`)
+            .then(queryResponse => {
+                if(queryResponse.rows[0]){
+                    res.end(JSON.stringify({
+                        login: queryResponse.rows[0].login,
+                        email: queryResponse.rows[0].email,
+                        avatar: queryResponse.rows[0].avatar,
+                        about : queryResponse.rows[0].about
+                    }));
+                }
+            });
+        }else{   
+            res.status(401).send("").end();
+        }
 
     }
 }

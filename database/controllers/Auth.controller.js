@@ -11,10 +11,11 @@ class AuthController{
         .then(queryResult=>{
             if(queryResult.rows[0]){
                 const token = jwt.sign({
-                    exp:Math.floor(Date.now()/1000)+(60*60),
+                    exp:Math.floor(Date.now()/1000)+(60*60*2),
                     data: login,
                 },process.env.JWT_SECRET);
-                res.cookie('token', "ass", {sameSite: 'none', secure:'true', httpOnly: true});
+
+                res.cookie('token', token, {sameSite: 'none', secure:'true', httpOnly: true});
                 res.send({
                     status:"OK",
                     login
@@ -50,6 +51,14 @@ class AuthController{
     async tokenCheck(req,res){
         res.send(req.cookies.token || undefined);
     }
+
+    
+    async logoutUser(req,res){
+        console.log("LOGOUT");
+        res.cookie('token', "", {sameSite: 'none', secure:'true', httpOnly: true});
+        res.end();
+    }
+
 }
 
 module.exports = new AuthController();

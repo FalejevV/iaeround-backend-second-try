@@ -6,6 +6,7 @@ const UserController = require ('../controllers/User.controller.js');
 router.post("/user", UserController.createUser);
 router.get("/user", UserController.getAllUsers);
 router.get("/user/:id", UserController.getOneUser);
+router.get("/usertoken", UserController.getUserByToken);
 router.put("/user", UserController.updateUser);
 router.delete("/user/:id", UserController.deleteUser);
 
