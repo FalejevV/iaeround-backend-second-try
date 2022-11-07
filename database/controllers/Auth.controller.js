@@ -22,12 +22,6 @@ class AuthController{
                     token
                 }
 
-                res.cookie('locale', JSON.stringify(body), {
-                    maxAge: new Date() * 60 + 300,
-                    domain: 'http://localhost:3000',
-                    secure: true,
-                    sameSite:'none',
-                });
                 res.send({ 
                     status:"OK",
                     login: login,
