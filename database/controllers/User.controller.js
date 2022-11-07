@@ -41,10 +41,7 @@ class UserController{
                 }
             });
         }else{   
-            res.send({
-                status:"NONAUTH",
-            });
-            res.end();
+            res.send("").end();
         }
 
     }
