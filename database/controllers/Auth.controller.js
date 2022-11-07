@@ -54,7 +54,6 @@ class AuthController{
 
     
     async logoutUser(req,res){
-        console.log("LOGOUT");
         res.cookie('token', "", {sameSite: 'none', secure:'true', httpOnly: true});
         res.end();
     }
