@@ -41,7 +41,7 @@ class UserController{
                 }
             });
         }else{   
-            res.send("").end();
+            res.status(401).send("").end();
         }
 
     }
