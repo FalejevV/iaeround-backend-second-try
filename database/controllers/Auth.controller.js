@@ -10,7 +10,7 @@ class AuthController{
         db.query(`select * from users where (login = '${login}' or email = '${login}') and password = crypt('${password}', password)`)
         .then(queryResult=>{
             if(queryResult.rows[0]){
-                res.cookie('name', 'geeksforgeeks', {sameSite: 'none', secure:'true'});
+                res.cookie('name', 'geeksforgeeks', {sameSite: 'none', secure:'true', httpOnly: true});
                 res.send({
                     status:"A",
                 });
