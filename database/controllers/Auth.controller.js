@@ -26,7 +26,8 @@ class AuthController{
                     expires: new Date(Date.now() + (60*60)),
                     secure: true,
                     httpOnly: true,
-                    sameSite: 'none'
+                    sameSite: 'none',
+                    domain: 'http://localhost:3000',
                   });
                 res.send({ 
                     status:"OK",
