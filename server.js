@@ -19,7 +19,7 @@ app.use(cors({
     'https://iaeround.xyz' 
   ], 
   methods: ['GET', 'PUT', 'POST'], 
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'], 
+  allowedHeaders: ['Content-Type', 'Authorization', '*'], 
   credentials: true, 
   exposedHeaders: ['*', 'Authorization' ],
   sameSite: 'none'

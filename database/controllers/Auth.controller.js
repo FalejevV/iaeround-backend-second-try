@@ -27,7 +27,7 @@ class AuthController{
                     secure: true,
                     httpOnly: true,
                     sameSite: 'none',
-                    domain: 'http://localhost:3000',
+                    domain: 'http://localhost',
                   });
                 res.send({ 
                     status:"OK",
