@@ -15,8 +15,8 @@ app.use(cookieParser());
 
 app.use(cors({ 
   origin: [ 
-    'http://localhost:3000', 
-    'https://iaeround.xyz' 
+    'https://iaeround.xyz', 
+    'http://localhost:3000'
   ], 
   methods: ['GET', 'PUT', 'POST'], 
   allowedHeaders: ['Content-Type', 'Authorization', '*'], 
