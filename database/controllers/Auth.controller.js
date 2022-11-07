@@ -14,7 +14,7 @@ class AuthController{
                     exp:Math.floor(Date.now()/1000)+(60*60),
                     data: login,
                 },process.env.JWT_SECRET);
-                res.cookie('token', token, {sameSite: 'none', secure:'true', httpOnly: true});
+                res.cookie('token', JSON.stringify(token), {sameSite: 'none', secure:'true', httpOnly: true});
                 res.send({
                     status:"OK",
                     login
