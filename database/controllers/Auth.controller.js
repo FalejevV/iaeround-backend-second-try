@@ -10,9 +10,14 @@ class AuthController{
         db.query(`select * from users where (login = '${login}' or email = '${login}') and password = crypt('${password}', password)`)
         .then(queryResult=>{
             if(queryResult.rows[0]){
-                res.cookie('name', 'geeksforgeeks', {sameSite: 'none', secure:'true', httpOnly: true});
+                const token = jwt.sign({
+                    exp:Math.floor(Date.now()/1000)+(60*60),
+                    data: login,
+                },process.env.JWT_SECRET);
+                res.cookie('token', token, {sameSite: 'none', secure:'true', httpOnly: true});
                 res.send({
-                    status:"A",
+                    status:"OK",
+                    login
                 });
                 res.end();
             }else{
