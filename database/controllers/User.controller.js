@@ -12,17 +12,16 @@ class UserController{
 
     }
     async getOneUser(req, res){
-        db.query(`select *  from users where (id = '${req.params.id}');`)
-            .then(queryResponse => {
-                if(queryResponse.rows[0]){
-                    res.end(JSON.stringify({
-                        login: queryResponse.rows[0].login,
-                        email: queryResponse.rows[0].email,
-                        avatar: queryResponse.rows[0].avatar,
-                        about : queryResponse.rows[0].about
-                    }));
-                }
-            });
+        const user_data = await db.query(`select *  from users where (id = '${req.params.id}');`).then(res => res.rows[0]);
+        const likes = await db.query(`select * from routes where '${req.params.id}'=any(likes)`).then(res => res.rows);
+        const routes = await db.query(`select * from routes where owner_id = ${req.params.id}`).then(res => res.rows);
+
+        res.json({
+            user_data,
+            likes,
+            routes
+        })
+
     }
     async updateUser(req, res){
 
@@ -42,17 +41,19 @@ class UserController{
             db.query(`select *  from users where (login = '${verified.data}');`)
             .then(queryResponse => {
                 if(queryResponse.rows[0]){
-                    res.end(JSON.stringify({
+                    res.json({
                         id: queryResponse.rows[0].id,
                         login: queryResponse.rows[0].login,
                         email: queryResponse.rows[0].email,
                         avatar: queryResponse.rows[0].avatar,
                         about : queryResponse.rows[0].about
-                    }));
+                    });
+                    return;
                 }
             });
         }else{   
             res.status(401).send("").end();
+            return;
         }
 
     }
