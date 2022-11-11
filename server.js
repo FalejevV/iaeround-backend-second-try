@@ -35,7 +35,7 @@ app.get('/', function (req, res) {
 })
 
 
-app.use('/storage', express.static('storage'))
+app.use('/storage', express.static(__dirname + 'storage'));
 
 app.listen((process.env.PORT || 5000), () => {
   console.log('listening to ' + (process.env.PORT || 5000));
