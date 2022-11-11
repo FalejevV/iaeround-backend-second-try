@@ -31,11 +31,11 @@ app.use("/api", authRoutes);
 
 
 app.get('/', function (req, res) {
-  res.send(__dirname);
+  res.send("running");
 })
 
 
-app.use('/storage', express.static(__dirname + 'storage'));
+app.use('/storage', express.static(__dirname + '/storage'));
 
 app.listen((process.env.PORT || 5000), () => {
   console.log('listening to ' + (process.env.PORT || 5000));
