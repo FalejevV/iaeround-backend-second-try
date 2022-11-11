@@ -15,11 +15,18 @@ class UserController{
         const user_data = await db.query(`select *  from users where (id = '${req.params.id}');`).then(res => res.rows[0]);
         const likes = await db.query(`select * from routes where '${req.params.id}'=any(likes)`).then(res => res.rows);
         const routes = await db.query(`select * from routes where owner_id = ${req.params.id}`).then(res => res.rows);
+        let verified = undefined;
+        try{
+            verified = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+        }catch(err){
+            
+        }
 
         res.json({
             user_data,
             likes,
-            routes
+            routes,
+            myLogin: verified?.data || undefined
         })
 
     }
@@ -36,8 +43,13 @@ class UserController{
             return;
         }
 
-        const verified = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
-        if(verified){
+        let verified = undefined;
+        try{
+            verified = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
+        }catch(err){
+            
+        }
+        if(verified && verified.data){
             db.query(`select *  from users where (login = '${verified.data}');`)
             .then(queryResponse => {
                 if(queryResponse.rows[0]){
