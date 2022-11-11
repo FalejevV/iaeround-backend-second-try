@@ -31,7 +31,7 @@ app.use("/api", authRoutes);
 
 
 app.get('/', function (req, res) {
-  res.send("running");
+  res.send(__dirname);
 })
 
 
