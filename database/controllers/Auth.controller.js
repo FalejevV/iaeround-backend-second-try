@@ -14,6 +14,7 @@ class AuthController{
                 const token = jwt.sign({
                     exp:Math.floor(Date.now()/1000)+(60*60*2),
                     data: login,
+                    id: queryResult.rows[0].id,
                 },process.env.JWT_SECRET);
 
                 res.cookie('token', token, {sameSite: 'none', secure:'true', httpOnly: true});
