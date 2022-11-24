@@ -1,8 +1,6 @@
 const db = require('../../database');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-var Jimp = require('jimp');
-var fs = require('fs');
 const { symbolCheck, bodyInjectionCheck } = require('../VarChecker');
 
 class UserController{
@@ -38,6 +36,7 @@ class UserController{
             myLogin: verified?.data || undefined
         }).end();
     }
+
     async updateUser(req, res){
         let verified = undefined;
         try{
@@ -47,6 +46,7 @@ class UserController{
         }
 
         if(verified){
+            var Jimp = require('jimp');
             let file = req.file;
             let name = req.body.name;
             let about = req.body.about;
