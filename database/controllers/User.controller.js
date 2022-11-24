@@ -62,14 +62,14 @@ class UserController{
                     res.status(400).json({status: "File is too big"}).end();
                     return;
                 }
-                /*
+                
                 Jimp.read(file.path, (err, image) => {
                     if (err) throw err;
                     image
                       .quality(80)
                       .write(`storage/avatar/${verified.id}.jpeg`);
                   });
-                  */
+                
             }
 
             let finalQuery = `UPDATE users SET name='${name}', about='${about}', avatar='${verified.id}.jpeg' WHERE id = '${verified.id}';`;
