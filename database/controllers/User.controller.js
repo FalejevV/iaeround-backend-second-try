@@ -66,7 +66,7 @@ class UserController{
                     if (err) throw err;
                     image
                       .quality(80)
-                      .write(`storage/avatar/${verified.id}.jpeg`);
+                      .write(`/storage/avatar/${verified.id}.jpeg`);
                   });
             }
 
