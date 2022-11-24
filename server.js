@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 dotenv.config();
 const rateLimit = require('express-rate-limit');
+const bodyParser = require('body-parser');
 
 const app = express();
 var cors = require('cors')
@@ -11,11 +12,13 @@ const userRoutes = require("./database/routes/User.routes");
 const tagRoutes = require("./database/routes/Tag.routes");
 const authRoutes = require("./database/routes/Auth.routes");
 
+app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
+
 app.use(cors({ 
-  origin: "https://iaeround.xyz",  
+  origin: "https://iaeround-backend.vercel.app",  
   methods: ['GET', 'PUT', 'POST'], 
   allowedHeaders: ['Content-Type', 'Authorization', '*'], 
   credentials: true, 
@@ -26,14 +29,13 @@ app.use(cors({
 
 
 const apiLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+	windowMs: 10 * 60 * 1000, // 15 minutes
+	max: 300, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 })
 
 app.use('/api', apiLimiter)
-
 
 app.use("/api", routeRoutes);
 app.use("/api", userRoutes);
