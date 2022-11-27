@@ -2,6 +2,8 @@ const db = require('../../database');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { symbolCheck, bodyInjectionCheck } = require('../VarChecker');
+const StorageController = require('../../storage/StorageController.ts');
+const xid = require('xid-js');
 
 class UserController{
     async createUser(req, res){
@@ -11,6 +13,18 @@ class UserController{
     async getAllUsers(req, res){
 
     }
+
+    async uploadFile(filePath) {
+        const options = {
+          destination: "/avatar/ass.jpeg",
+        };
+      
+        await storage.bucket("iaeround").upload(filePath, options);
+        console.log(`${filePath} uploaded to ${bucketName}`);
+      }
+
+      
+
     async getOneUser(req, res){
         const user_data = await db.query(`select * from users where (id = '${req.params.id}');`).then(res => res.rows[0]);
         const likes = await db.query(`select * from routes where '${req.params.id}'=any(likes)`).then(res => res.rows);
@@ -46,7 +60,6 @@ class UserController{
         }
 
         if(verified){
-            var Jimp = require('jimp');
             let file = req.file;
             let name = req.body.name;
             let about = req.body.about;
@@ -57,25 +70,29 @@ class UserController{
                 res.status(404).json({status: "Symbols are not alowed"}).end();
             }
 
+            
             if(file){
                 if(file.size > 1000000){
                     res.status(400).json({status: "File is too big"}).end();
                     return;
                 }
-                
-                Jimp.read(file.path, (err, image) => {
-                    if (err) throw err;
-                    image
-                      .quality(80)
-                      .write(`storage/avatar/${verified.id}.jpeg`);
-                  });
-                
-            }
 
-            let finalQuery = `UPDATE users SET name='${name}', about='${about}', avatar='${verified.id}.jpeg' WHERE id = '${verified.id}';`;
-            db.query(finalQuery).then(resp => {
-                res.status(200).json({status: "OK"}).end();
-            });
+                if(StorageController.clearFolder(`avatar/${verified.id}`)){
+                    const imageName = xid.next() + ".jpeg";
+                    if(StorageController.uploadFile(file.path,`avatar/${verified.id}/${imageName}`)){
+                        let finalQuery = `UPDATE users SET name='${name}', about='${about}', avatar='${imageName}' WHERE id = '${verified.id}';`;
+                        db.query(finalQuery).then(resp => {
+                            res.status(200).json({status: "OK"}).end();
+                        });
+                    }
+                }
+            }else{
+                let finalQuery = `UPDATE users SET name='${name}', about='${about}' WHERE id = '${verified.id}';`;
+                db.query(finalQuery).then(resp => {
+                    res.status(200).json({status: "OK"}).end();
+                });
+            }
+           
 
         }else{
             res.status(401).json({status: "Auth error"}).end();
