@@ -41,14 +41,20 @@ class StorageController{
         return true;
     }
 
-    async uploadFile(fileName, destination){
-        const options = {
-            destination: destination,
-          };
+    async uploadFile(fileData, destination){
         console.log("upload");
         try{
-        await connect().upload(fileName,options);
+            const file = connect().file(destination);
+            file.save(fileData, (err) => {
+              if (!err) {
+                return true;
+              } else {
+                console.log("error " + err);
+                return false;
+              }
+            });
         }catch(err){
+            return false;
             console.log(err);
         }
         return true;

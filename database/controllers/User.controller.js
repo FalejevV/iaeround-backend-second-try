@@ -80,7 +80,7 @@ class UserController{
                 if(StorageController.clearFolder(`avatar/${verified.id}`)){
                     const date = new Date().getTime();
                     const imageName = date.toString() + ".jpeg";
-                    if(StorageController.uploadFile(file.path,`avatar/${verified.id}/${imageName}`)){
+                    if(StorageController.uploadFile(file.buffer,`avatar/${verified.id}/${imageName}`)){
                         let finalQuery = `UPDATE users SET name='${name}', about='${about}', avatar='${imageName}' WHERE id = '${verified.id}';`;
                         db.query(finalQuery).then(resp => {
                             res.status(200).json({status: "OK"}).end();
