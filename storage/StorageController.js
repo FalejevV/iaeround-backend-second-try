@@ -49,13 +49,11 @@ class StorageController{
               if (!err) {
                 return true;
               } else {
-                console.log("error " + err);
-                return false;
+                throw new Error(err);
               }
             });
         }catch(err){
-            return false;
-            console.log(err);
+            throw new Error(err);
         }
         return true;
     }
