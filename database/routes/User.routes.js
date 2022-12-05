@@ -2,7 +2,7 @@ const Router = require('express');
 const router = new Router();
 const UserController = require ('../controllers/User.controller.js');
 const multer = require('multer');
-const upload = multer({ dest: './tmp' });
+const upload = multer({ dest: '/tmp' });
 
 router.post("/user", UserController.createUser);
 router.get("/user", UserController.getAllUsers);
