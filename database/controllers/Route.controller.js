@@ -5,9 +5,7 @@ const jwt = require('jsonwebtoken');
 
 class RouteController {
     async createRoute(req, res) {
-        const body = req.body;
-        const injectionCheckResult = bodyInjectionCheck(body)
-        res.send(body);
+        console.log(req.body);
         /*
         if(injectionCheckResult === "OK"){
             res.send("OK");

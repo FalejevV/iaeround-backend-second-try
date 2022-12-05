@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 dotenv.config();
 const rateLimit = require('express-rate-limit');
-const bodyParser = require('body-parser');
 
 const app = express();
 var cors = require('cors')
@@ -12,10 +11,9 @@ const userRoutes = require("./database/routes/User.routes");
 const tagRoutes = require("./database/routes/Tag.routes");
 const authRoutes = require("./database/routes/Auth.routes");
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+app.use(express.urlencoded({ limit: '50mb', extended: false }));
+app.use(express.json({limit: '50mb'}));
 app.use(cookieParser());
-
 
 app.use(cors({  
   origin: "https://iaeround.xyz",  

@@ -4,7 +4,6 @@ require('dotenv').config();
 const { symbolCheck, bodyInjectionCheck } = require('../VarChecker');
 const StorageController = require("../../storage/StorageController");
 
-const xid = require('xid-js');
 
 class UserController{
     async createUser(req, res){
@@ -79,7 +78,8 @@ class UserController{
                 }
 
                 if(StorageController.clearFolder(`avatar/${verified.id}`)){
-                    const imageName = xid.next() + ".jpeg";
+                    const date = new Date().getTime();
+                    const imageName = date.toString() + ".jpeg";
                     if(StorageController.uploadFile(file.path,`avatar/${verified.id}/${imageName}`)){
                         let finalQuery = `UPDATE users SET name='${name}', about='${about}', avatar='${imageName}' WHERE id = '${verified.id}';`;
                         db.query(finalQuery).then(resp => {
