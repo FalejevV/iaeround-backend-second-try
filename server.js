@@ -11,8 +11,8 @@ const userRoutes = require("./database/routes/User.routes");
 const tagRoutes = require("./database/routes/Tag.routes");
 const authRoutes = require("./database/routes/Auth.routes");
 
-app.use(express.urlencoded({ limit: '50mb', extended: false }));
-app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({ limit: '10mb', extended: false }));
+app.use(express.json({limit: '10mb'}));
 app.use(cookieParser());
 
 app.use(cors({  
