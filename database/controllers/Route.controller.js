@@ -2,19 +2,46 @@ const db = require('../../database');
 const { bodyInjectionCheck, symbolCheck } = require("../VarChecker");
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const { uploadImages, uploadFile } = require('../../storage/StorageController');
 
 class RouteController {
     async createRoute(req, res) {
-        console.log(req.body);
-        /*
-        if(injectionCheckResult === "OK"){
-            res.send("OK");
-        }else{
-            console.log(injectionCheckResult);
-            res.status(401);
-            res.send(injectionCheckResult + " <-- wrong input");
+        let title = req.body.title;
+        let distance = req.body.distance;
+        let time = req.body.time;
+        let about = req.body.about;
+        let tags = req.body.tags;
+        let files = req.files;
+        let token = req.cookies.token || "";
+        let verified = undefined;
+        try{
+            verified = jwt.verify(token, process.env.JWT_SECRET);
+        }catch(err){
+            
         }
-        */
+        if(verified !== undefined && bodyInjectionCheck(req.body) == "OK"){
+            let gpxFile;
+            let imageFiles = [];
+
+            files.forEach((file,index) => {
+                if(file.originalname === "blob"){
+                    file.originalname = new Date().getTime() + "" + index;
+                    imageFiles.push(file);
+                }else if (file?.originalname?.toString().slice(-3) === "gpx"){
+                    gpxFile = file;
+                }
+            })
+            
+            const routeQuery = await db.query(`INSERT INTO routes (title,distance,time,about,tags,likes,gpx,images,owner_id) values ('${title}', '${distance}', '${time}', '${about}', '{${tags}}', '{}', '${gpxFile?.originalname || ""}', '{${imageFiles.map(image => '"' + image.originalname + ".jpeg" + '"').toString()}}', '${verified.id}') RETURNING id;`);
+            let ID = routeQuery.rows[0].id || "0";
+            if (ID !== "0"){
+                uploadImages(imageFiles, `img/${ID}/`);
+                if(gpxFile !== undefined){
+                    uploadFile(gpxFile.buffer, `gpx/${ID}/${title}.gpx`);
+                }
+            }
+        }
+
     }
     async getAllRoutes(req, res) {
         const routeQuery = await db.query(`SELECT * FROM routes;`);
