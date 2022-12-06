@@ -33,7 +33,7 @@ class RouteController {
             })
             
             const routeQuery = await db.query(`INSERT INTO routes (title,distance,time,about,tags,likes,gpx,images,owner_id) values ('${title}', '${distance}', '${time}', '${about}', '{${tags}}', '{}', '${gpxFile?.originalname || ""}', '{${imageFiles.map(image => '"' + image.originalname + ".jpeg" + '"').toString()}}', '${verified.id}') RETURNING id;`);
-            let ID = routeQuery.rows[0].id || "0";
+            let ID = routeQuery?.rows[0]?.id || "0";
             if (ID !== "0"){
                 uploadImages(imageFiles, `img/${ID}/`);
                 if(gpxFile !== undefined){
