@@ -44,6 +44,7 @@ class RouteController {
                 }).end({
                     status: "OK",
                 });
+                return;
             }else{
                 res.json({
                     status: "SQL ERROR",
