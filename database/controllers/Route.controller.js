@@ -41,18 +41,24 @@ class RouteController {
                 }
                 res.json({
                     status: "OK",
-                }).end();
+                }).end({
+                    status: "OK",
+                });
             }else{
                 res.json({
-                    status: "SQL error",
-                }).end();
+                    status: "SQL ERROR",
+                }).end({
+                    status: "SQL ERROR",
+                });
                 return;
             }
         }
 
         res.json({
             status: "AUTH ERROR",
-        }).end();
+        }).end({
+            status: "AUTH ERROR",
+        });
         return;
     }
     async getAllRoutes(req, res) {
