@@ -39,9 +39,21 @@ class RouteController {
                 if(gpxFile !== undefined){
                     uploadFile(gpxFile.buffer, `gpx/${ID}/${title}.gpx`);
                 }
+                res.json({
+                    status: "OK",
+                }).end();
+            }else{
+                res.json({
+                    status: "SQL error",
+                }).end();
+                return;
             }
         }
 
+        res.json({
+            status: "AUTH ERROR",
+        }).end();
+        return;
     }
     async getAllRoutes(req, res) {
         const routeQuery = await db.query(`SELECT * FROM routes;`);
@@ -105,7 +117,7 @@ class RouteController {
             }else{
                 res.json({
                     status: "Unable to update likes",
-                })
+                }).end();
             }
         }
     }
