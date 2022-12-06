@@ -113,6 +113,7 @@ class UserController{
             verified = jwt.verify(req.cookies.token, process.env.JWT_SECRET);
         }catch(err){
             res.status(404).json({status: "Auth error"}).end();
+            return;
         }
         if(verified !== undefined && verified.data){
             db.query(`select *  from users where (login = '${verified.data}');`)
