@@ -16,15 +16,13 @@ app.use(express.json({limit: '15mb'}));
 app.use(cookieParser());
 
 app.use(cors({  
-  origin: true ? "https://iaeround-frontend.vercel.app" : "http://localhost:3000",  
+  origin: true ? "https://iaeround.xyz" : "http://localhost:3000",  
   methods: ['GET', 'PUT', 'POST'], 
   allowedHeaders: ['Content-Type', 'Authorization', '*'], 
   credentials: true, 
   exposedHeaders: ['*', 'Authorization' ],
   sameSite: 'none'
 }));
-
-
 
 const apiLimiter = rateLimit({
 	windowMs: 10 * 60 * 1000, // 15 minutes
