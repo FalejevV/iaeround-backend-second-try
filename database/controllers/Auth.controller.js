@@ -27,6 +27,7 @@ class AuthController{
                         name
                     }
                     let token = JWTSystem.sign(data);
+                    res.cookie('IAEAuth',JSON.stringify(data), { maxAge: 4 * 60 * 60 * 1000, sameSite: 'none', secure: true });
                     res.cookie('IAEToken',JSON.stringify(token), { maxAge: 4 * 60 * 60 * 1000, httpOnly: true, sameSite: 'none', secure: true  });
                     res.cookie('IAEAuth',JSON.stringify(data), { maxAge: 4 * 60 * 60 * 1000, sameSite: 'none', secure: true });
                     res.send({
