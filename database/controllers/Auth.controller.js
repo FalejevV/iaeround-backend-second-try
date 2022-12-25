@@ -54,6 +54,7 @@ class AuthController{
     async register(req,res){
         if(bodyInjectionCheck(req.body) === "OK"){
             res.send({
+                data: req.cookies,
                 status: "OK"
             });
         }else{
