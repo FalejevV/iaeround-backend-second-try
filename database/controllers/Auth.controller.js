@@ -18,7 +18,8 @@ class AuthController{
                 let about = loginQuery.rows[0].about;
                 let avatar = loginQuery.rows[0].avatar || "";
                 let name = loginQuery.rows[0].name;
-                if(id && login && about && avatar && name){
+                console.log(id,login,about,avatar,name);
+                if(id && login && about && name){
                     let data = {
                         id,
                         login,
