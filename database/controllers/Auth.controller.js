@@ -7,12 +7,12 @@ class AuthController{
     async login(req,res){
        if(bodyInjectionCheck(req.body) === "OK"){
             let loginQuery;
-            if(req.body[0].includes("@") && false){
-                loginQuery = await db.query(`SELECT * FROM users WHERE email = '${req.body[0]}' AND password = crypt('${req.body[1]}', password);`);
+            if(req.body.login.includes("@") && false){
+                loginQuery = await db.query(`SELECT * FROM users WHERE email = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
             }else{
-                loginQuery = await db.query(`SELECT * FROM users WHERE login = '${req.body[0]}' AND password = crypt('${req.body[1]}', password);`);
+                loginQuery = await db.query(`SELECT * FROM users WHERE login = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
             }
-            if(loginQuery && loginQuery?.rows[0] && loginQuery.rows[0].id){
+            if(loginQuery && loginQuery.rows[0] && loginQuery.rows[0].id){
                 let id = loginQuery.rows[0].id;
                 let login = loginQuery.rows[0].login;
                 let about = loginQuery.rows[0].about;
@@ -53,14 +53,39 @@ class AuthController{
 
     async register(req,res){
         if(bodyInjectionCheck(req.body) === "OK"){
-            res.send({
-                data: req.cookies,
-                status: "OK"
-            });
+            let login = req.body.login;
+            let password = req.body.password;
+            let rpassword = req.body.rpassword;
+            let email = req.body.email;
+            if (password !== rpassword){
+                res.send({
+                    status: "Passwords do not match",
+                });
+                res.end();
+                return; 
+            }
+            const checkIfExistsQuery = await db.query(`SELECT * from users where login = '${login}' or email = '${email}'`);
+            if(checkIfExistsQuery.rows.length > 0){
+                res.send({
+                    status: "Login or email is already in use",
+                }); 
+                return;
+            }else{
+                const createUserQuery = await db.query(`INSERT into users (email,login,password,name) values ('${email}', '${login}', crypt('${password}', gen_salt('bf')), '${login}') returning *`);
+                if(createUserQuery.rows.length > 0){
+                    res.send({
+                        status: "OK",
+                    });
+                    res.end();
+                    return;
+                }
+            }
         }else{
             res.send({
                 status: "You cannot enter symbols",
             });
+            res.end();
+            return;
         }
     }
 
