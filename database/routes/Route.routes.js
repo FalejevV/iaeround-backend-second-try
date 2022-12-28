@@ -10,5 +10,6 @@ router.get("/routes", RouteController.getAllRoutes);
 router.get("/route/:id", RouteController.getOneRoute);
 router.put("/route", RouteController.updateRoute);
 router.delete("/route/:id", RouteController.deleteRoute);
+router.post("/route/routelike", RouteController.likeRoute)
 
 module.exports = router;

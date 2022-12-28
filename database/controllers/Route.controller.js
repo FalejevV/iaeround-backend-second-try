@@ -32,5 +32,52 @@ class RouteController {
     async deleteRoute(req, res) {
 
     }
+
+    async likeRoute(req,res){
+        let tokenCookie = req.cookies.IAEToken.substring(1, req.cookies.IAEToken.length-1);
+        let verified = undefined;
+        try{
+            verified = jwt.verify(tokenCookie, process.env.JWT_SECRET);
+        }catch(err){
+            console.log(err);
+        }
+        if(!verified){
+            res.send({
+                status:"You need to login first!"
+            });
+            res.end();
+            return;
+        }
+        if(bodyInjectionCheck(req.body) === "OK" && verified){
+            let action = req.body.action;
+            let id = req.body.id;
+            if(action && id){
+                if(action === "ADD"){
+                    let likeQuery = await db.query(`update routes set likes = array_append(likes, '${verified.id}') where id = ${id} returning likes;`);
+                    res.send(JSON.stringify({
+                        status:"OK",
+                        data: likeQuery.rows[0].likes
+                    }));
+                    res.end();
+                    return;
+                }else if(action === "REMOVE"){
+                    let likeQuery = await db.query(`update routes set likes = array_remove(likes, '${verified.id}') where id = ${id} returning likes;`);
+                    console.log(likeQuery);
+                    res.send(JSON.stringify({
+                        status:"OK",
+                        data: likeQuery.rows[0].likes
+                    }));
+                    res.end();
+                    return;
+                }
+            }
+        }
+        res.send({
+            status:"Error?"
+        });
+        res.end();
+        return;
+    }
+
 }
 module.exports = new RouteController();
