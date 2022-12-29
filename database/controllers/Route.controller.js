@@ -17,11 +17,11 @@ class RouteController {
     }
 
     async getOneRoute(req, res) {
-        let routeId = req.body.id;
+        let routeId = req.params.id;
         if (routeId){
-            let routeQuery = await db.query("SELECT * FROM ROUTES where id === " + routeId);
+            let routeQuery = await db.query(`SELECT * FROM ROUTES where id = '${routeId}';`);
             res.send({
-                data:routeQuery.rows
+                data:routeQuery.rows[0]
             })
             res.end();
         }

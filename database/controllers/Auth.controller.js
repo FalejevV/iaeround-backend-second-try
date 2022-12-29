@@ -1,5 +1,7 @@
 const db = require('../../database');
 const { bodyInjectionCheck } = require('../VarChecker');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 const JWTSystem = require("../../jwt");
 
 class AuthController{
@@ -90,13 +92,27 @@ class AuthController{
     }
 
     async tokenCheck(req,res){
-        
+        let tokenCookie = req.cookies.IAEToken;
+        if(tokenCookie && tokenCookie !== undefined){
+            let verified = JWTSystem.verifyToken(tokenCookie);
+            if(verified !== undefined){
+                res.send({
+                    id:verified.id,
+                }).end();
+                return;
+            }
+        }
+        res.send({
+            id:undefined
+        });
+        res.end();
+        return;
     }
 
     
     async logoutUser(req,res){
-        res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
-        res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
+        res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: false  });
+        res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: false });
         res.send({
             status: "OK"
         });
