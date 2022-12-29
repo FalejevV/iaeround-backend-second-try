@@ -93,14 +93,11 @@ class AuthController{
 
     async tokenCheck(req,res){
         let tokenCookie = req.cookies.IAEToken;
-        res.send(tokenCookie);
-        res.end();
-        return;
         if(tokenCookie && tokenCookie !== undefined){
             let verified = JWTSystem.verifyToken(tokenCookie);
             if(verified !== undefined){
                 res.send({
-                    id:verified.id,
+                    id:verified,
                 }).end();
                 return;
             }
@@ -114,8 +111,8 @@ class AuthController{
 
     
     async logoutUser(req,res){
-        res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: false  });
-        res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: false });
+        res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
+        res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
         res.send({
             status: "OK"
         });
