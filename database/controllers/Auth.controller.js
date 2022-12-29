@@ -93,6 +93,9 @@ class AuthController{
 
     async tokenCheck(req,res){
         let tokenCookie = req.cookies.IAEToken;
+        res.send(tokenCookie);
+        res.end();
+        return;
         if(tokenCookie && tokenCookie !== undefined){
             let verified = JWTSystem.verifyToken(tokenCookie);
             if(verified !== undefined){
