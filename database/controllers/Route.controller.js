@@ -3,6 +3,7 @@ const { bodyInjectionCheck, symbolCheck } = require("../VarChecker");
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { uploadImages, uploadFile } = require('../../storage/StorageController');
+const JWTSystem = require("../../jwt");
 
 class RouteController {
     async createRoute(req, res) {
@@ -27,10 +28,85 @@ class RouteController {
         }
     }
     async updateRoute(req, res) {
+        let authCookie = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(authCookie);
+        if(bodyInjectionCheck(req.body) === "OK"){
+            let id = req.body.id;
+            let title = req.body.title;
+            let distance = req.body.distance;
+            let time = req.body.time;
+            let about = req.body.about;
+            let tags = req.body.tags;
+            if(id !== undefined && title !== undefined && distance !== undefined && time !== undefined && about !== undefined && tags !== undefined){
+                if(id.trim() !== "" && title.trim !== "" && distance.trim !== "" && time.trim !== "" && about.trim !== "" && tags.length >= 2 && tags.length <=4){
+                    let getRouteQuery = await db.query(`select owner_id from routes where id='${id}'`);
+                    if(getRouteQuery.rows && getRouteQuery.rows[0].owner_id){
+                        if(getRouteQuery.rows[0].owner_id !== verified){
+                            res.send({
+                                status:"You are not the owner of this route (Try to relogin)"
+                            });
+                            res.end();
+                            return;
+                        }
+                    }
 
+                    let updateFetch = await db.query(`update routes set title='${title}', distance='${distance}', time='${time}', about='${about}', tags='{${tags}}' where id='${id}' returning id`);
+                    if(updateFetch.rows[0].id === id){
+                        res.send({
+                            status:"OK"
+                        });
+                        res.end();
+                        return;
+                    }else{
+                        res.send({
+                            status:"Error accuired updating route"
+                        });
+                        res.end();
+                        return;
+                    }
+                }
+            }
+        }else{
+            res.send({
+                status:"You have entered forbidden symbols"
+            });
+            res.end();
+            return;
+        }
     }
     async deleteRoute(req, res) {
-
+        let authCookie = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(authCookie);
+        let id = req.params.id;
+        if(id && id.trim() !== "" && verified !== undefined){
+            if(verified === "-1"){
+                res.send({
+                    status:"You need to login!"
+                });
+                res.end();
+                return;
+            }
+            
+            let getRouteOwner = await db.query(`SELECT owner_id from routes WHERE id='${id}'`);
+            if(getRouteOwner.rows && getRouteOwner.rows[0].owner_id){
+                if(getRouteOwner.rows[0].owner_id === verified){
+                    let removeQuery = await db.query(`DELETE from routes where id='${id}' RETURNING id`);
+                    if(removeQuery.rows[0].id === id){
+                        res.send({
+                            status:"OK"
+                        });
+                        res.end();
+                        return;
+                    }
+                }else{
+                    res.send({
+                        status:"You cannot remove rotes you dont own!"
+                    });
+                    res.end();
+                    return;
+                }
+            }
+        }
     }
 
     async likeRoute(req,res){

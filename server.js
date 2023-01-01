@@ -16,8 +16,8 @@ app.use(express.json({limit: '15mb'}));
 app.use(cookieParser());
 
 app.use(cors({  
-  origin: true ? "https://iaeround.xyz" : "http://localhost:3000",  
-  methods: ['GET', 'PUT', 'POST'], 
+  origin: false ? "https://iaeround.xyz" : "http://localhost:3000",  
+  methods: ['GET', 'PUT', 'POST', 'DELETE'], 
   allowedHeaders: ['Content-Type', 'Authorization', '*'], 
   credentials: true, 
   exposedHeaders: ['*', 'Authorization' ],

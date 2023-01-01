@@ -17,8 +17,21 @@ class UserController{
       
 
     async getOneUser(req, res){
-        
-    }
+        let userId = req.params.id;
+        if(userId){
+          let getUserQuery = await db.query(`SELECT name FROM users WHERE id = '${userId}'`);
+          res.send({
+            name: getUserQuery.rows[0].name
+          });
+          res.end();
+          return;
+        }
+
+        res.send({
+          name:"..."
+        });
+        res.end();
+    } 
 
     async updateUser(req, res){
         
