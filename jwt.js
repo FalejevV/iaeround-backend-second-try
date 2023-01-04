@@ -7,15 +7,17 @@ class JWTSystem{
     }
 
     verifyToken(cookie){
-        let tokenCookie = cookie.substring(1, cookie.length-1);
-        let verified = undefined;
-        try{
-            verified = jwt.verify(tokenCookie, process.env.JWT_SECRET);
-        }catch(err){
-            console.log(err);
-        }
-        if(verified !== undefined){
-            return verified.id;
+        if(cookie !== undefined){
+            let tokenCookie = cookie.substring(1, cookie.length-1);
+            let verified = undefined;
+            try{
+                verified = jwt.verify(tokenCookie, process.env.JWT_SECRET);
+            }catch(err){
+                console.log(err);
+            }
+            if(verified !== undefined){
+                return verified.id;
+            }
         }
         return "-1";
     }

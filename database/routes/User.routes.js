@@ -8,6 +8,7 @@ var upload = multer({ storage: storage });
 router.get("/user", UserController.getAllUsers);
 router.get("/user/:id", UserController.getOneUser);
 router.get("/usertoken", UserController.getUserByToken);
+router.get("/userme", UserController.getMe);
 router.post("/user/profilechange",upload.single('avatar'), UserController.updateUser);
 router.delete("/user/:id", UserController.deleteUser);
 
