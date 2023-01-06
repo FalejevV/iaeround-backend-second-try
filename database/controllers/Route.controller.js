@@ -7,7 +7,100 @@ const JWTSystem = require("../../jwt");
 
 class RouteController {
     async createRoute(req, res) {
+        let cookieToken = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(cookieToken);
+        if(verified === "-1"){
+            res.send({
+                status:"Auth error. Try to relogin"
+            });
+            res.end();
+            return;
+        }
 
+        if(bodyInjectionCheck(req.body) === "OK"){
+            let title = req.body.title;
+            let distance = req.body.distance;
+            let time = req.body.time;
+            let about = req.body.about;
+            let gpxFile = "";
+            let imageFiles = [];
+            let imageFileNames = [];
+            let tags = req.body.tags.split(',');
+            let tagsFormatted = [];
+
+            // Seperate files. chech for GPX file, and for Images
+            if(req.files.length >= 2){
+                Array.from(req.files).forEach((file,index) => {
+                    if(file.originalname.substring(file.originalname.length -3, file.originalname.length) === "gpx"){
+                        file.originalname = title + ".gpx";
+                        gpxFile = file;
+                    }else if (file.mimetype === "image/png"){
+                        file.originalname = title+ new Date().valueOf() + index;
+                        imageFileNames.push(`"${file.originalname}.jpeg"`);
+                        imageFiles.push(file);
+                    }
+                });
+            }else{
+                res.send({
+                    status:"Please upload minimum 2 images. (5 max)"
+                });
+                res.end();
+                return;
+            }
+
+            // Changing tags, surrounding them with "" for query insert
+            tags.forEach(tag => {
+                tagsFormatted.push(`"${tag}"`);
+            });
+            if(tagsFormatted.length < 2 || tagsFormatted.length > 4){
+                res.send({
+                    status:"Please select 2-4 tags",
+                })
+                res.end();
+                return;
+            }
+
+            // Date for query insert
+            let date = new Date().toISOString().slice(0, 10);
+
+            let createRouteQuery = await db.query(`INSERT into routes (title,distance,time, about,gpx,images,owner_id,tags,likes,date) values('${title}', '${distance}', '${time}', '${about}', '${gpxFile.originalname}', '{${imageFileNames}}' , '${verified}', '{${tagsFormatted}}', '{}', '${date}') returning *;`);
+                let uploadError = false;
+                if(createRouteQuery.rows[0].gpx !== ""){
+                    let gpxUpload = uploadFile(gpxFile.buffer, `gpx/${createRouteQuery.rows[0].id}/${createRouteQuery.rows[0].gpx}`);
+                    if(gpxUpload === false){
+                        uploadError = true;
+                    }
+                }
+
+                createRouteQuery.rows[0].images.forEach((textImage,index) => {
+                    if(uploadError){
+                        return;
+                    }
+
+                    let imageUpload = uploadFile(imageFiles[index].buffer, `img/${createRouteQuery.rows[0].id}/${textImage}`);
+                    if(imageUpload === false){
+                        uploadError = true;
+                    }
+                });
+
+                if(uploadError === false){
+                    res.send({
+                        status:"OK",
+                        id: createRouteQuery.rows[0].id
+                    });
+                    res.end();
+                    return;
+                }else{
+                    db.query(`DELETE from routes where id =${createRouteQuery.rows[0].id}`);
+                    res.send({
+                        status:"Failed to upload files. Route creation failed.",
+                    });
+                    res.end();
+                    return;
+                }
+        }
+        res.send("OK");
+        res.end();
     }
     async getAllRoutes(req, res) {
         let routeQuery = await db.query("SELECT * FROM ROUTES");

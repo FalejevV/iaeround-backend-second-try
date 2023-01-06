@@ -42,7 +42,6 @@ class StorageController{
     }
 
     async uploadFile(fileData, destination){
-        console.log("upload");
         try{
             const file = connect().file(destination);
             file.save(fileData, (err) => {
@@ -55,27 +54,7 @@ class StorageController{
         }catch(err){
             throw new Error(err);
         }
-        return true;
-    }
-
-    async uploadImages(files, mainDestination, routeId){
-        console.log("multiple");
-        try{
-            files.forEach(imageFile => {
-                console.log(mainDestination + imageFile.originalname + ".jpeg");
-                const uploadFile = connect().file(mainDestination + imageFile.originalname + ".jpeg");
-                uploadFile.save(imageFile.buffer, (err) => {
-                    if (!err) {
-                        console.log("OK");
-                      return true;
-                    } else {
-                      throw new Error(err);
-                    }
-                  });
-            })
-        }catch(err){
-            throw new Error(err);
-        }
+        return false;
     }
 }
 
