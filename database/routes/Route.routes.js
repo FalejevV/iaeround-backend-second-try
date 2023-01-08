@@ -5,7 +5,12 @@ const multer = require('multer');
 var storage = multer.memoryStorage(); 
 var upload = multer({ storage: storage });
 
-router.post("/route", upload.array('files',10),  RouteController.createRoute);
+router.post("/route", upload.fields([{
+    name: 'thumbnail', maxCount: 1
+  }, {
+    name: 'files', maxCount: 10
+  }]),  RouteController.createRoute);
+
 router.get("/routes", RouteController.getAllRoutes);
 router.get("/route/:id", RouteController.getOneRoute);
 router.put("/route", RouteController.updateRoute);

@@ -2,7 +2,7 @@ const db = require('../../database');
 const { bodyInjectionCheck, symbolCheck } = require("../VarChecker");
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const { uploadImages, uploadFile } = require('../../storage/StorageController');
+const { uploadImages, uploadFile, removeFile, clearFolder } = require('../../storage/StorageController');
 const JWTSystem = require("../../jwt");
 
 class RouteController {
@@ -29,17 +29,29 @@ class RouteController {
             let tagsFormatted = [];
 
             // Seperate files. chech for GPX file, and for Images
-            if(req.files.length >= 2){
-                Array.from(req.files).forEach((file,index) => {
-                    if(file.originalname.substring(file.originalname.length -3, file.originalname.length) === "gpx"){
-                        file.originalname = title + ".gpx";
-                        gpxFile = file;
-                    }else if (file.mimetype === "image/png"){
-                        file.originalname = title+ new Date().valueOf() + index;
-                        imageFileNames.push(`"${file.originalname}.jpeg"`);
-                        imageFiles.push(file);
-                    }
+            if(req.files.files.length >= 2){
+                Array.from(req.files.files).forEach((file,index) => {
+                        if(file.originalname.substring(file.originalname.length -3, file.originalname.length) === "gpx"){
+                            file.originalname = title + ".gpx";
+                            gpxFile = file;
+                        }else if (file.mimetype.includes("image")){
+                            file.originalname = title+ new Date().valueOf() + index;
+                            imageFileNames.push(`"${file.originalname}.jpeg"`);
+                            imageFiles.push(file);
+                        }
                 });
+                if(req.files.thumbnail.length > 0){
+                    let file = req.files.thumbnail[0];
+                    file.originalname = "0" + title+ new Date().valueOf();
+                    imageFileNames.unshift(`"${file.originalname}.jpeg"`);
+                    imageFiles.unshift(file);
+                }else{
+                    res.send({
+                        status:"Please select title"
+                    });
+                    res.end();
+                    return;
+                }
             }else{
                 res.send({
                     status:"Please upload minimum 2 images. (5 max)"
@@ -47,7 +59,7 @@ class RouteController {
                 res.end();
                 return;
             }
-
+            
             // Changing tags, surrounding them with "" for query insert
             tags.forEach(tag => {
                 tagsFormatted.push(`"${tag}"`);
@@ -63,9 +75,9 @@ class RouteController {
             // Date for query insert
             let date = new Date().toISOString().slice(0, 10);
 
-            let createRouteQuery = await db.query(`INSERT into routes (title,distance,time, about,gpx,images,owner_id,tags,likes,date) values('${title}', '${distance}', '${time}', '${about}', '${gpxFile.originalname}', '{${imageFileNames}}' , '${verified}', '{${tagsFormatted}}', '{}', '${date}') returning *;`);
+            let createRouteQuery = await db.query(`INSERT into routes (title,distance,time, about,gpx,images,owner_id,tags,likes,date) values('${title}', '${distance}', '${time}', '${about}', '${gpxFile.originalname || " "}', '{${imageFileNames}}' , '${verified}', '{${tagsFormatted}}', '{}', '${date}') returning *;`);
                 let uploadError = false;
-                if(createRouteQuery.rows[0].gpx !== ""){
+                if(createRouteQuery.rows[0].gpx.trim() !== ""){
                     let gpxUpload = uploadFile(gpxFile.buffer, `gpx/${createRouteQuery.rows[0].id}/${createRouteQuery.rows[0].gpx}`);
                     if(gpxUpload === false){
                         uploadError = true;
@@ -92,6 +104,8 @@ class RouteController {
                     return;
                 }else{
                     db.query(`DELETE from routes where id =${createRouteQuery.rows[0].id}`);
+                    clearFolder(`img/${createRouteQuery.rows[0].id}`);
+                    clearFolder(`gpx/${createRouteQuery.rows[0].id}`);
                     res.send({
                         status:"Failed to upload files. Route creation failed.",
                     });
@@ -185,12 +199,15 @@ class RouteController {
                 if(getRouteOwner.rows[0].owner_id === verified){
                     let removeQuery = await db.query(`DELETE from routes where id='${id}' RETURNING id`);
                     if(removeQuery.rows[0].id === id){
+                        clearFolder(`img/${req.params.id}`);
+                        clearFolder(`gpx/${req.params.id}`);
                         res.send({
                             status:"OK"
                         });
                         res.end();
                         return;
-                    }
+                    };
+                    
                 }else{
                     res.send({
                         status:"You cannot remove rotes you dont own!"
@@ -231,7 +248,6 @@ class RouteController {
                     return;
                 }else if(action === "REMOVE"){
                     let likeQuery = await db.query(`update routes set likes = array_remove(likes, '${verified.id}') where id = ${id} returning likes;`);
-                    console.log(likeQuery);
                     res.send(JSON.stringify({
                         status:"OK",
                         data: likeQuery.rows[0].likes

@@ -26,8 +26,8 @@ class StorageController{
     async removeFile(filePath){
         try{
             await connect().file(filePath).delete();
-        }catch{
-
+        }catch(err){
+            console.log(err);
         }
         return true;
     }
@@ -35,8 +35,8 @@ class StorageController{
     async clearFolder(folderPath){
         try{
             await connect().deleteFiles({ prefix: folderPath }, function(err) {});
-        }catch{
-
+        }catch(err){
+            console.log(err);
         }
         return true;
     }
