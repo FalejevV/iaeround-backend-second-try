@@ -88,8 +88,12 @@ class UserController{
                     uploadFileResult = await uploadFile(avatarEdit.buffer,`avatar/${verified}/${name+date}.jpeg`);
                   }
                 };
-
-                let updateProfileQuery = await db.query(`update users set name='${name}', email='${email}', about='${about}', avatar='${name+date}.jpeg' where id='${verified}' returning *`);
+                let updateProfileQuery;
+                if(avatarEdit !== undefined){
+                  updateProfileQuery = await db.query(`update users set name='${name}', email='${email}', about='${about}', avatar='${name+date}.jpeg' where id='${verified}' returning *`);
+                }else{
+                  updateProfileQuery = await db.query(`update users set name='${name}', email='${email}', about='${about}' where id='${verified}' returning *`);
+                }
                 if(uploadFile && updateProfileQuery.rows[0].id !== undefined){
                   res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
                   res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
