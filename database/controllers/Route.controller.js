@@ -17,6 +17,22 @@ class RouteController {
             return;
         }
 
+        let rowsCounterQuery = await db.query('select count(*) from routes');
+        if(rowsCounterQuery && rowsCounterQuery.rows && rowsCounterQuery.rows[0].count){
+            if(parseInt(rowsCounterQuery.rows[0].count) > 150){
+                res.send({
+                    status:"Max route count on website is reached. (Max 150 routes)"
+                });
+                res.end();
+                return;
+            }
+        }else{
+            res.send({
+                status:"Database request error. (count(*))"
+            });
+            res.end();
+            return;
+        }
         if(bodyInjectionCheck(req.body) === "OK"){
             let title = req.body.title;
             let distance = req.body.distance;
