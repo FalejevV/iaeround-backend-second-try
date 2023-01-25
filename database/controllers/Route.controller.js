@@ -50,7 +50,7 @@ class RouteController {
                         if(file.originalname.substring(file.originalname.length -3, file.originalname.length) === "gpx"){
                             file.originalname = title + ".gpx";
                             gpxFile = file;
-                        }else if (file.mimetype.includes("image")){
+                        }else if (file.mimetype.includes("image") || file.mimetype.includes("octet-stream")){
                             file.originalname = title+ new Date().valueOf() + index;
                             imageFileNames.push(`"${file.originalname}.jpeg"`);
                             imageFiles.push(file);
