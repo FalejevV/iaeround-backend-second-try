@@ -158,25 +158,27 @@ class AuthController{
         if(recoverQuery && recoverQuery.rows[0] && recoverQuery.rows !== undefined){
             if(recoverQuery.rows[0].id){
                 let tempPassword = "iae"+(new Date().valueOf())+"round";
-                let emailing = false;
-                try{
-                    emailing = await sendMail('vovan123123@gmail.com',"test",`Your temporary password is:${tempPassword}. Please change it in profile settings page`);
-                }catch(err){
-                    console.log("EMAIL ERROR", err);
-                }
-
-                if(emailing){
-                    res.send({
-                        status:"SENT"
-                    });
-                    res.end();
-                    return;
-                }else{
-                    res.send({
-                        status:"ERROR"
-                    });
-                    res.end();
-                    return;
+                let passwordChangeQuery = await db.query(`update users set password = crypt('${tempPassword}', gen_salt('bf')) where id='${recoverQuery.rows[0].id}' returning *`);
+                if(passwordChangeQuery && passwordChangeQuery.rows[0] && passwordChangeQuery.rows !== undefined){
+                    let emailing = false;
+                    try{
+                        emailing = await sendMail(passwordChangeQuery.rows[0].email,"test",`Your temporary password is:${tempPassword}. Please change it in profile settings page`);
+                    }catch(err){
+                        console.log("EMAIL ERROR", err);
+                    }
+                    if(emailing){
+                        res.send({
+                            status:`New password has been sent to email ***${passwordChangeQuery.rows[0].email.substring(3,passwordChangeQuery.rows[0].email.length)}`
+                        });
+                        res.end();
+                        return;
+                    }else{
+                        res.send({
+                            status:"ERROR"
+                        });
+                        res.end();
+                        return;
+                    }
                 }
             }
         }else{
