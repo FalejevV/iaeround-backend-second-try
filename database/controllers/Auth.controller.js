@@ -3,7 +3,7 @@ const { bodyInjectionCheck } = require('../VarChecker');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const JWTSystem = require("../../jwt");
-const { sendMail } = require('../../Mailer');
+const { sendMail } = require('../../mailer');
 
 class AuthController{
 
