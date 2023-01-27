@@ -3,6 +3,7 @@ const { bodyInjectionCheck } = require('../VarChecker');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const JWTSystem = require("../../jwt");
+const { sendMail } = require('../../Mailer');
 
 class AuthController{
 
@@ -129,8 +130,68 @@ class AuthController{
       
     }
 
-    async changeEmail(req,res){
-      
+    async recoverPassword(req,res){
+        if(bodyInjectionCheck(req.body) !== "OK"){
+            res.send({
+                status:"Forbidden symbols used"
+            });
+            res.end();
+            return;
+        }
+
+        let emailOrLogin = req.body.login;
+
+        if(emailOrLogin.trim() === ""){
+            res.send({
+                status:"Provided data is empty"
+            });
+            res.end();
+            return;
+        }
+        let recoverQuery;
+        if(emailOrLogin.includes("@")){
+            recoverQuery = await db.query(`SELECT * FROM users WHERE email = '${emailOrLogin}'`);
+        }else{
+            recoverQuery = await db.query(`SELECT * FROM users WHERE login = '${emailOrLogin}'`);
+        }
+
+        if(recoverQuery && recoverQuery.rows[0] && recoverQuery.rows !== undefined){
+            if(recoverQuery.rows[0].id){
+                let tempPassword = "iae"+(new Date().valueOf())+"round";
+                let emailing = false;
+                try{
+                    emailing = await sendMail('vovan123123@gmail.com',"test",`Your temporary password is:${tempPassword}. Please change it in profile settings page`);
+                }catch(err){
+                    console.log("EMAIL ERROR", err);
+                }
+
+                if(emailing){
+                    res.send({
+                        status:"SENT"
+                    });
+                    res.end();
+                    return;
+                }else{
+                    res.send({
+                        status:"ERROR"
+                    });
+                    res.end();
+                    return;
+                }
+            }
+        }else{
+            res.send({
+                status:"User not found"
+            });
+            res.end();
+            return;
+        }
+
+
+        res.send({
+            status:"OK"
+        });
+        res.end();
     }
 }
 
