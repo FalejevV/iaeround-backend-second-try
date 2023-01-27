@@ -9,7 +9,7 @@ class AuthController{
     async login(req,res){
        if(bodyInjectionCheck(req.body) === "OK"){
             let loginQuery;
-            if(req.body.login.includes("@") && false){
+            if(req.body.login.includes("@")){
                 loginQuery = await db.query(`SELECT * FROM users WHERE email = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
             }else{
                 loginQuery = await db.query(`SELECT * FROM users WHERE login = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
@@ -43,6 +43,11 @@ class AuthController{
                     });
                     return;
                 }
+            }else{
+                res.send({
+                    status: "Login or password is incorrect",
+                });
+                return;
             }
             
        }else{
