@@ -127,8 +127,59 @@ class AuthController{
 
 
     async changePassword(req,res){
-      
+        if(bodyInjectionCheck(req.body) !== "OK"){
+            res.send({
+                status:"Forbidden symbols used"
+            });
+            res.end();
+            return;
+        }
+
+        let cookieToken = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(cookieToken);
+        if(verified === "-1"){
+            res.send({
+                status:"Auth error. Try to relogin"
+            });
+            res.end();
+            return;
+        }
+
+        let oldPassword = req.body.oldP;
+        let newPassword = req.body.newP;
+        let repeatPassword = req.body.repeatP;
+
+        if(oldPassword !== undefined && newPassword !== undefined && repeatPassword !== undefined){
+            let checkForPassword = await db.query(`select * from users where id='${verified}' AND password = crypt('${oldPassword}', password);`);
+            if(checkForPassword?.rows[0]?.id !== undefined){
+                let passwordChangeQuery = await db.query(`update users set password = crypt('${newPassword}', gen_salt('bf')) where id='${checkForPassword?.rows[0]?.id}' returning *`);
+                if(passwordChangeQuery?.rows[0]?.id !== undefined){
+                    res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
+                    res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
+                    res.send({
+                        status:`OK`
+                    });
+                    res.end();
+                    return;
+                }else{
+                    res.send({
+                        status:`Database query error. Please try again after couple minutes`
+                    });
+                    res.end();
+                    return;
+                }
+                
+            }else{
+                res.send({
+                    status:`Old password is wrong`
+                });
+                res.end();
+                return;
+            }
+        }
     }
+
+    
 
     async recoverPassword(req,res){
         if(bodyInjectionCheck(req.body) !== "OK"){
@@ -152,7 +203,11 @@ class AuthController{
         if(emailOrLogin.includes("@")){
             recoverQuery = await db.query(`SELECT * FROM users WHERE email = '${emailOrLogin}'`);
         }else{
-            recoverQuery = await db.query(`SELECT * FROM users WHERE login = '${emailOrLogin}'`);
+            res.send({
+                status:"Invalid email"
+            });
+            res.end();
+            return;
         }
 
         if(recoverQuery && recoverQuery.rows[0] && recoverQuery.rows !== undefined){
@@ -162,7 +217,10 @@ class AuthController{
                 if(passwordChangeQuery && passwordChangeQuery.rows[0] && passwordChangeQuery.rows !== undefined){
                     let emailing = false;
                     try{
-                        emailing = await sendMail(passwordChangeQuery.rows[0].email,"test",`Your temporary password is:${tempPassword}. Please change it in profile settings page`);
+                        emailing = await sendMail(
+                            passwordChangeQuery.rows[0].email,
+                            "☢️IAEround password recovery☢️",`
+                            Your temporary password is:  ${tempPassword} Please change it in profile settings page`);
                     }catch(err){
                         console.log("EMAIL ERROR", err);
                     }

@@ -60,12 +60,11 @@ class UserController{
         if(bodyInjectionCheck(req.body) === "OK" && verified !== "-1"){
           let avatar = req.file;
           let name = req.body.name;
-          let email = req.body.email;
           let about = req.body.about;
           let date = new Date().valueOf();
           let avatarEdit;
-          if(name !== undefined && email !== undefined && about !== undefined){
-            if(name.trim() !== "" && email.trim() !== "" && about.trim() !== ""){
+          if(name !== undefined && about !== undefined){
+            if(name.trim() !== "" && about.trim() !== ""){
               if(avatar !== undefined){
                 if(avatar.size < 2000000){
                   if(avatar.mimetype.includes('image')){
@@ -74,14 +73,7 @@ class UserController{
                 }
               }
 
-              let checkTakenEmailQuery = await db.query(`select * from users where email='${email}' and id !='${verified}'`);
-              if(checkTakenEmailQuery.rows.length > 0){
-                res.send({
-                  status:"Emails is taken"
-                });
-                res.end();
-                return;
-              }else{
+              
                 let uploadFileResult = false;
                 if(avatarEdit !== undefined){
                   if(clearFolder(`avatar/${verified}`)){
@@ -90,9 +82,9 @@ class UserController{
                 };
                 let updateProfileQuery;
                 if(avatarEdit !== undefined){
-                  updateProfileQuery = await db.query(`update users set name='${name}', email='${email}', about='${about}', avatar='${name+date}.jpeg' where id='${verified}' returning *`);
+                  updateProfileQuery = await db.query(`update users set name='${name}', about='${about}', avatar='${name+date}.jpeg' where id='${verified}' returning *`);
                 }else{
-                  updateProfileQuery = await db.query(`update users set name='${name}', email='${email}', about='${about}' where id='${verified}' returning *`);
+                  updateProfileQuery = await db.query(`update users set name='${name}', about='${about}' where id='${verified}' returning *`);
                 }
                 if(uploadFile && updateProfileQuery.rows[0].id !== undefined){
                   res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
@@ -103,8 +95,6 @@ class UserController{
                   res.end();
                   return;
                 }
-
-              }   
               
             }else{
               res.send({
