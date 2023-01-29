@@ -16,7 +16,7 @@ async function sendMail(to, subject, text){
     let mailOptions = {
         from: process.env.MAIL_LOGIN,
         to: to,
-        subject: subject,
+        subject: "🚴 "+subject+" ☢️",
         text: text
     };
     return new Promise((resolve,reject)=>{transporter.sendMail(mailOptions, function(error, info){

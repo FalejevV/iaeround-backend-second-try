@@ -219,7 +219,7 @@ class AuthController{
                     try{
                         emailing = await sendMail(
                             passwordChangeQuery.rows[0].email,
-                            "☢️IAEround password recovery☢️",`
+                            "IAEround password recovery",`
                             Your temporary password is:  ${tempPassword} Please change it in profile settings page`);
                     }catch(err){
                         console.log("EMAIL ERROR", err);
@@ -252,6 +252,99 @@ class AuthController{
             status:"OK"
         });
         res.end();
+    }
+
+    async getEmailChangeCode(req,res){
+        let cookieToken = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(cookieToken);
+        if(verified === "-1"){
+            res.send({
+                status:"Auth error. Try to relogin"
+            });
+            res.end();
+            return;
+        }
+
+        let dateValue = new Date().valueOf().toString();
+        let code = dateValue.substring(dateValue.length-6, dateValue.length);
+
+        let sendCodeGetUserQuery = await db.query(`update users set emailchangekey = '${code}' where id='${verified}' returning *`);
+        if(sendCodeGetUserQuery?.rows[0]?.emailchangekey !== undefined){
+            if(sendMail(sendCodeGetUserQuery.rows[0].email,"Email change", `Email change comfirmation code: ${code}`)){
+                res.send({
+                    status:`Confirmation code has been sent to ***${sendCodeGetUserQuery.rows[0].email.substring(3,sendCodeGetUserQuery.rows[0].email.length)}`
+                });
+                res.end();
+                return;
+            }else{
+                res.send({
+                    status:"Error. Email was not sent"
+                });
+                res.end();
+                return;
+            }
+        }
+
+        res.send({
+            status:"Error. Please try again later"
+        });
+        res.end();
+        return;
+    }
+
+    async changeEmail(req,res){
+        let cookieToken = req.cookies.IAEToken;
+        let verified = JWTSystem.verifyToken(cookieToken);
+        if(verified === "-1"){
+            res.send({
+                status:"Auth error. Try to relogin"
+            });
+            res.end();
+            return;
+        }
+
+        if(bodyInjectionCheck(req.body) !== "OK"){
+            res.send({
+                status:"Forgidden symbols used"
+            }).end();
+            return;
+        }
+
+        let newEmail = req.body.email;
+        let code = req.body.code;
+        if(newEmail !== undefined && code !== undefined){
+            let checkEmailTakenQuery = await db.query(`select * from users where email='${newEmail}'`);
+            let codeCheck = await db.query(`select * from users where id='${verified}' and emailchangekey='${code}';`);
+            if(checkEmailTakenQuery?.rows.length === 0 && codeCheck?.rows[0]?.id !== undefined){
+                let emailChangeQuery = await db.query(`update users set email='${newEmail}' where id='${verified}' and emailchangekey='${code}' returning *`);
+                if(emailChangeQuery?.rows[0]?.email !== undefined){
+                    res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true });
+                    res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
+                    res.send({
+                        status:`OK`,
+                        text:`Email has been changed to ${newEmail} please relogin!`
+                    }).end();
+                    return;
+                }
+            }
+            if(codeCheck?.rows[0]?.id === undefined){
+                res.send({
+                    status:"Wrong code"
+                }).end();
+                return;
+            }
+            if(checkEmailTakenQuery?.rows[0].id !== undefined){
+                res.send({
+                    status:"Email is already taken"
+                }).end();
+                return;
+            }
+        }
+
+        res.send({
+            status:"Fetching error"
+        }).end();
+        return;
     }
 }
 
