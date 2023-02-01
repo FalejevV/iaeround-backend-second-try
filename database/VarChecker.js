@@ -1,5 +1,5 @@
 function symbolCheck(variable){
-    const forbiddenChatacters = /[`^&()+\\[\]{};:\\|<>\/?~]/
+    const forbiddenChatacters = /[`()+\{};\\\/~]/
     return forbiddenChatacters.test(variable);
 }
 
