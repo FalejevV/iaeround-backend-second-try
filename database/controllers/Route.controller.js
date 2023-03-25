@@ -33,7 +33,7 @@ class RouteController {
             res.end();
             return;
         }
-        if(bodyInjectionCheck(req.body) === "OK"){
+        if(true){
             let title = req.body.title;
             let distance = req.body.distance;
             let time = req.body.time;
@@ -75,23 +75,11 @@ class RouteController {
                 res.end();
                 return;
             }
-            
-            // Changing tags, surrounding them with "" for query insert
-            tags.forEach(tag => {
-                tagsFormatted.push(`"${tag}"`);
-            });
-            if(tagsFormatted.length < 2 || tagsFormatted.length > 4){
-                res.send({
-                    status:"Please select 2-4 tags",
-                })
-                res.end();
-                return;
-            }
 
             // Date for query insert
             let date = new Date().toISOString().slice(0, 10);
 
-            let createRouteQuery = await db.query(`INSERT into routes (title,distance,time, about,gpx,images,owner_id,tags,likes,date) values('${title}', '${distance}', '${time}', '${about}', '${gpxFile.originalname || " "}', '{${imageFileNames}}' , '${verified}', '{${tagsFormatted}}', '{}', '${date}') returning *;`);
+            let createRouteQuery = await db.query(`INSERT into routes (title,distance,time, about,gpx,images,owner_id,tags,likes,date) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) returning *;`,[title, distance, time, about, gpxFile.originalname || " ", imageFileNames , verified, tags, {}, date]);
                 let uploadError = false;
                 if(createRouteQuery.rows[0].gpx.trim() !== ""){
                     let gpxUpload = uploadFile(gpxFile.buffer, `gpx/${createRouteQuery.rows[0].id}/${createRouteQuery.rows[0].gpx}`);
@@ -129,8 +117,6 @@ class RouteController {
                     return;
                 }
         }
-        res.send("OK");
-        res.end();
     }
     async getAllRoutes(req, res) {
         let routeQuery = await db.query("SELECT * FROM ROUTES");
@@ -153,7 +139,7 @@ class RouteController {
     async updateRoute(req, res) {
         let authCookie = req.cookies.IAEToken;
         let verified = JWTSystem.verifyToken(authCookie);
-        if(bodyInjectionCheck(req.body) === "OK"){
+        if(true){
             let id = req.body.id;
             let title = req.body.title;
             let distance = req.body.distance;
@@ -173,7 +159,7 @@ class RouteController {
                         }
                     }
 
-                    let updateFetch = await db.query(`update routes set title='${title}', distance='${distance}', time='${time}', about='${about}', tags='{${tags}}' where id='${id}' returning id`);
+                    let updateFetch = await db.query(`update routes set title=$1, distance=$2, time=$3, about=$4, tags=$5 where id=$6 returning id`,[title,distance,time,about,tags,id]);
                     if(updateFetch.rows[0].id === id){
                         res.send({
                             status:"OK"
@@ -189,12 +175,6 @@ class RouteController {
                     }
                 }
             }
-        }else{
-            res.send({
-                status:"You have entered forbidden symbols"
-            });
-            res.end();
-            return;
         }
     }
     async deleteRoute(req, res) {
@@ -255,7 +235,7 @@ class RouteController {
             let id = req.body.id;
             if(action && id){
                 if(action === "ADD"){
-                    let likeQuery = await db.query(`update routes set likes = array_append(likes, '${verified.id}') where id = ${id} returning likes;`);
+                    let likeQuery = await db.query(`update routes set likes = array_append(likes, $1) where id =$2 returning likes;`,[verified.id, id]);
                     res.send(JSON.stringify({
                         status:"OK",
                         data: likeQuery.rows[0].likes
@@ -263,7 +243,7 @@ class RouteController {
                     res.end();
                     return;
                 }else if(action === "REMOVE"){
-                    let likeQuery = await db.query(`update routes set likes = array_remove(likes, '${verified.id}') where id = ${id} returning likes;`);
+                    let likeQuery = await db.query(`update routes set likes = array_remove(likes, $1) where id = $2 returning likes;`,[verified.id, id]);
                     res.send(JSON.stringify({
                         status:"OK",
                         data: likeQuery.rows[0].likes

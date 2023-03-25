@@ -11,9 +11,9 @@ class AuthController{
        if(bodyInjectionCheck(req.body) === "OK"){
             let loginQuery;
             if(req.body.login.includes("@")){
-                loginQuery = await db.query(`SELECT * FROM users WHERE email = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
+                loginQuery = await db.query(`SELECT * FROM users WHERE email = $1 AND password = crypt($2, password);`,[req.body.login,req.body.password]);
             }else{
-                loginQuery = await db.query(`SELECT * FROM users WHERE login = '${req.body.login}' AND password = crypt('${req.body.password}', password);`);
+                loginQuery = await db.query(`SELECT * FROM users WHERE login = $1 AND password = crypt($2, password);`,[req.body.login,req.body.password]);
             }
             if(loginQuery && loginQuery.rows[0] && loginQuery.rows[0].id){
                 let id = loginQuery.rows[0].id;
@@ -72,14 +72,14 @@ class AuthController{
                 res.end();
                 return; 
             }
-            const checkIfExistsQuery = await db.query(`SELECT * from users where login = '${login}' or email = '${email}'`);
+            const checkIfExistsQuery = await db.query(`SELECT * from users where login = $1 or email = $2`,[login,email]);
             if(checkIfExistsQuery.rows.length > 0){
                 res.send({
                     status: "Login or email is already in use",
                 }); 
                 return;
             }else{
-                const createUserQuery = await db.query(`INSERT into users (email,login,password,name) values ('${email}', '${login}', crypt('${password}', gen_salt('bf')), '${login}') returning *`);
+                const createUserQuery = await db.query(`INSERT into users (email,login,password,name) values ($1, $2, crypt($3, gen_salt('bf')), '${login}') returning *`,[email,login,password]);
                 if(createUserQuery.rows.length > 0){
                     res.send({
                         status: "OK",
@@ -127,14 +127,6 @@ class AuthController{
 
 
     async changePassword(req,res){
-        if(bodyInjectionCheck(req.body) !== "OK"){
-            res.send({
-                status:"Forbidden symbols used"
-            });
-            res.end();
-            return;
-        }
-
         let cookieToken = req.cookies.IAEToken;
         let verified = JWTSystem.verifyToken(cookieToken);
         if(verified === "-1"){
@@ -150,9 +142,9 @@ class AuthController{
         let repeatPassword = req.body.repeatP;
 
         if(oldPassword !== undefined && newPassword !== undefined && repeatPassword !== undefined){
-            let checkForPassword = await db.query(`select * from users where id='${verified}' AND password = crypt('${oldPassword}', password);`);
+            let checkForPassword = await db.query(`select * from users where id=$1 AND password = crypt($2, password);`,[verified,oldPassword]);
             if(checkForPassword?.rows[0]?.id !== undefined){
-                let passwordChangeQuery = await db.query(`update users set password = crypt('${newPassword}', gen_salt('bf')) where id='${checkForPassword?.rows[0]?.id}' returning *`);
+                let passwordChangeQuery = await db.query(`update users set password = crypt($1, gen_salt('bf')) where id=$2 returning *`,[newPassword,checkForPassword?.rows[0]?.id]);
                 if(passwordChangeQuery?.rows[0]?.id !== undefined){
                     res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
                     res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });
@@ -178,8 +170,6 @@ class AuthController{
             }
         }
     }
-
-    
 
     async recoverPassword(req,res){
         if(bodyInjectionCheck(req.body) !== "OK"){
@@ -213,7 +203,7 @@ class AuthController{
         if(recoverQuery && recoverQuery.rows[0] && recoverQuery.rows !== undefined){
             if(recoverQuery.rows[0].id){
                 let tempPassword = "iae"+(new Date().valueOf())+"round";
-                let passwordChangeQuery = await db.query(`update users set password = crypt('${tempPassword}', gen_salt('bf')) where id='${recoverQuery.rows[0].id}' returning *`);
+                let passwordChangeQuery = await db.query(`update users set password = crypt($1, gen_salt('bf')) where id=$2 returning *`,[tempPassword,recoverQuery.rows[0].id]);
                 if(passwordChangeQuery && passwordChangeQuery.rows[0] && passwordChangeQuery.rows !== undefined){
                     let emailing = false;
                     try{
@@ -268,7 +258,7 @@ class AuthController{
         let dateValue = new Date().valueOf().toString();
         let code = dateValue.substring(dateValue.length-6, dateValue.length);
 
-        let sendCodeGetUserQuery = await db.query(`update users set emailchangekey = '${code}' where id='${verified}' returning *`);
+        let sendCodeGetUserQuery = await db.query(`update users set emailchangekey = $1 where id=$2 returning *`,[code,verified]);
         if(sendCodeGetUserQuery?.rows[0]?.emailchangekey !== undefined){
             if(sendMail(sendCodeGetUserQuery.rows[0].email,"Email change", `Email change comfirmation code: ${code}`)){
                 res.send({
@@ -313,10 +303,10 @@ class AuthController{
         let newEmail = req.body.email;
         let code = req.body.code;
         if(newEmail !== undefined && code !== undefined){
-            let checkEmailTakenQuery = await db.query(`select * from users where email='${newEmail}'`);
-            let codeCheck = await db.query(`select * from users where id='${verified}' and emailchangekey='${code}';`);
+            let checkEmailTakenQuery = await db.query(`select * from users where email=$1`,[newEmail]);
+            let codeCheck = await db.query(`select * from users where id=$1 and emailchangekey=$2;`,[verified,code]);
             if(checkEmailTakenQuery?.rows.length === 0 && codeCheck?.rows[0]?.id !== undefined){
-                let emailChangeQuery = await db.query(`update users set email='${newEmail}' where id='${verified}' and emailchangekey='${code}' returning *`);
+                let emailChangeQuery = await db.query(`update users set email=$1 where id=$2 and emailchangekey=$3 returning *`,[newEmail,verified,code]);
                 if(emailChangeQuery?.rows[0]?.email !== undefined){
                     res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true });
                     res.cookie('IAEAuth',undefined, { maxAge: 300, sameSite: 'none', secure: true });

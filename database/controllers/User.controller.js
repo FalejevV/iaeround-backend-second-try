@@ -14,7 +14,7 @@ class UserController{
     async getOneUser(req, res){
         let userId = req.params.id;
         if(userId){
-          let getUserQuery = await db.query(`SELECT * FROM users WHERE id = '${userId}'`);
+          let getUserQuery = await db.query(`SELECT * FROM users WHERE id = $1`,[userId]);
           res.send({
             id:getUserQuery.rows[0].id,
             name: getUserQuery.rows[0].name,
@@ -36,7 +36,7 @@ class UserController{
       let authCookie = req.cookies.IAEToken;
       let verified = JWTSystem.verifyToken(authCookie);
       if(verified !== "-1"){
-        let getUserQuery = await db.query(`SELECT * FROM users WHERE id = '${verified}'`);
+        let getUserQuery = await db.query(`SELECT * FROM users WHERE id = $1`,[verified]);
         res.send({
           id:getUserQuery.rows[0].id,
           email:getUserQuery.rows[0].email,
@@ -57,7 +57,7 @@ class UserController{
     async updateUser(req, res){
       let authToken = req.cookies.IAEToken;
       let verified = JWTSystem.verifyToken(authToken);
-        if(bodyInjectionCheck(req.body) === "OK" && verified !== "-1"){
+        if(verified !== "-1"){
           let avatar = req.file;
           let name = req.body.name;
           let about = req.body.about;
@@ -82,9 +82,9 @@ class UserController{
                 };
                 let updateProfileQuery;
                 if(avatarEdit !== undefined){
-                  updateProfileQuery = await db.query(`update users set name='${name}', about='${about}', avatar='${name+date}.jpeg' where id='${verified}' returning *`);
+                  updateProfileQuery = await db.query(`update users set name=$1, about=$2, avatar=$3 where id=$4 returning *`,[name,about,`${name+data}.jpeg`,verified]);
                 }else{
-                  updateProfileQuery = await db.query(`update users set name='${name}', about='${about}' where id='${verified}' returning *`);
+                  updateProfileQuery = await db.query(`update users set name=$1, about=$2 where id=$3 returning *`,[name,about,verified]);
                 }
                 if(uploadFile && updateProfileQuery.rows[0].id !== undefined){
                   res.cookie('IAEToken',undefined, { maxAge: 300, httpOnly: true, sameSite: 'none', secure: true  });
