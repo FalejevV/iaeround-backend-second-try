@@ -16,11 +16,11 @@ class UserController{
         if(userId){
           let getUserQuery = await db.query(`SELECT * FROM users WHERE id = $1`,[userId]);
           res.send({
-            id:getUserQuery.rows[0].id,
-            name: getUserQuery.rows[0].name,
-            login: getUserQuery.rows[0].login,
-            about:getUserQuery.rows[0].about,
-            avatar:getUserQuery.rows[0].avatar,
+            id:getUserQuery.rows[0]?.id || "-1",
+            name: getUserQuery.rows[0]?.name || "-1",
+            login: getUserQuery.rows[0]?.login || "-1",
+            about:getUserQuery.rows[0]?.about || "-1",
+            avatar:getUserQuery.rows[0]?.avatar,
           });
           res.end();
           return;
