@@ -82,7 +82,7 @@ class UserController{
                 };
                 let updateProfileQuery;
                 if(avatarEdit !== undefined){
-                  updateProfileQuery = await db.query(`update users set name=$1, about=$2, avatar=$3 where id=$4 returning *`,[name,about,`${name+data}.jpeg`,verified]);
+                  updateProfileQuery = await db.query(`update users set name=$1, about=$2, avatar=$3 where id=$4 returning *`,[name,about,`${name+date}.jpeg`,verified]);
                 }else{
                   updateProfileQuery = await db.query(`update users set name=$1, about=$2 where id=$3 returning *`,[name,about,verified]);
                 }
